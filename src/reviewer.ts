@@ -283,7 +283,7 @@ export function extractInlineComments(review: string, files: FileInfo[], lineMap
 
 function cleanReviewBody(review: string): string {
   let cleaned = review
-    .replace(/>>>\s*([^:\s]+):(\d+)\s*\|\s*(.+)/g, "- `$1:$2` — $3")
+    .replace(/>>>\s*([^:\s]+):(\d+)\s*\|\s*(.+)/g, "- `$1 line $2` — $3")
     .replace(/\n{3,}/g, "\n\n")
     .trim();
 
