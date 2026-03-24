@@ -281,21 +281,3 @@ Check the Actions tab for error logs. Common issues:
 
 **Can I use this in a private repo?**
 Yes. Be aware the diff is sent to Pollinations AI.
-
----
-
-## Development
-
-```bash
-git clone https://github.com/mikl-shortcuts/Pollinations-PR-Reviewer.git
-cd Pollinations-PR-Reviewer
-npm install
-npm run build
-```
-
-```bash
-git add -A
-git commit -m "v1.0.0"
-git tag -a v1 -m "v1.0.0"
-git push origin main --tags
-```
