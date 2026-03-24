@@ -5,7 +5,7 @@ on:
     types: [published]
 
 jobs:
-  update-major-tag:
+  update-tag-and-readme:
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -22,7 +22,7 @@ jobs:
             const tag = context.payload.release.tag_name;
             const major = tag.split('.')[0];
             const ref = `tags/${major}`;
-            const sha = '${{ github.sha }}';
+            const sha = context.payload.release.target_commitish;
 
             try {
               await github.rest.git.updateRef({
