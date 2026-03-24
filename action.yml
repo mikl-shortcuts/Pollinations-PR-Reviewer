@@ -3,7 +3,7 @@ description: "AI-powered code reviews for Pull Requests using Pollinations API"
 author: "mikl-shortcuts"
 
 branding:
-  icon: "eye"
+  icon: "check-circle"
   color: "purple"
 
 inputs:
