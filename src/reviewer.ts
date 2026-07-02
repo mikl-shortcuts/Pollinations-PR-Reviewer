@@ -22,6 +22,8 @@ export interface ReviewInput {
   splitReview: boolean;
   splitThreshold: number;
   projectStructure: string;
+  reasoningEffort?: string;
+  timeout?: number;
 }
 
 export type Verdict = "APPROVE" | "REQUEST_CHANGES" | "COMMENT";
@@ -329,7 +331,13 @@ ${diff}
       { role: "system", content: buildSystemPrompt(input.customPrompt) },
       { role: "user", content: userMessage },
     ],
-    { apiKey: input.apiKey, model: input.model, temperature: input.temperature },
+    {
+      apiKey: input.apiKey,
+      model: input.model,
+      temperature: input.temperature,
+      reasoningEffort: input.reasoningEffort,
+      timeout: input.timeout,
+    },
     input.maxRetries
   );
 
@@ -367,7 +375,13 @@ async function reviewSplit(input: ReviewInput, modelDisplay: string): Promise<Re
 
   core.info(`Split: ${chunks.length} chunks`);
 
-  const opts = { apiKey: input.apiKey, model: input.model, temperature: input.temperature };
+  const opts = {
+    apiKey: input.apiKey,
+    model: input.model,
+    temperature: input.temperature,
+    reasoningEffort: input.reasoningEffort,
+    timeout: input.timeout,
+  };
   const results: string[] = [];
   let allComments: InlineComment[] = [];
   let allLineMaps = new Map<string, Set<number>>();

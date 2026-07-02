@@ -9,6 +9,8 @@ export interface PollinationsOptions {
   apiKey: string;
   model: string;
   temperature: number;
+  reasoningEffort?: string;
+  timeout?: number;
 }
 
 export async function chat(
@@ -16,6 +18,16 @@ export async function chat(
   options: PollinationsOptions,
   signal?: AbortSignal
 ): Promise<string> {
+  const requestBody: any = {
+    model: options.model,
+    messages,
+    temperature: options.temperature,
+  };
+
+  if (options.reasoningEffort && options.reasoningEffort.trim() !== "") {
+    requestBody.reasoning_effort = options.reasoningEffort;
+  }
+
   const response = await fetch(
     "https://gen.pollinations.ai/v1/chat/completions",
     {
@@ -24,11 +36,7 @@ export async function chat(
         "Content-Type": "application/json",
         Authorization: `Bearer ${options.apiKey}`,
       },
-      body: JSON.stringify({
-        model: options.model,
-        messages,
-        temperature: options.temperature,
-      }),
+      body: JSON.stringify(requestBody),
       signal,
     }
   );
@@ -82,15 +90,16 @@ export async function chatWithRetry(
   maxRetries: number = 3
 ): Promise<string> {
   let lastError: Error | null = null;
+  const timeoutMs = (options.timeout ?? 120) * 1000;
 
   for (let attempt = 1; attempt <= maxRetries; attempt++) {
     try {
       core.info(`Sending request to Pollinations API (Attempt ${attempt}/${maxRetries}) using model: ${options.model}`);
       const controller = new AbortController();
       const timeout = setTimeout(() => {
-        core.warning(`Request timed out after 120 seconds on attempt ${attempt}`);
+        core.warning(`Request timed out after ${timeoutMs / 1000} seconds on attempt ${attempt}`);
         controller.abort();
-      }, 120_000);
+      }, timeoutMs);
 
       try {
         const result = await chat(messages, options, controller.signal);

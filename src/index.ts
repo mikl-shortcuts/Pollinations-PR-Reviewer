@@ -247,6 +247,8 @@ async function run(): Promise<void> {
     const maxRetries = parseInt(core.getInput("max-retries") || "3", 10);
     const splitReview = core.getInput("split-review") !== "false";
     const splitThreshold = parseInt(core.getInput("split-threshold") || "8", 10);
+    const reasoningEffort = core.getInput("reasoning-effort") || "";
+    const timeoutInput = parseInt(core.getInput("timeout") || "120", 10);
 
     const excludePatterns = excludeRaw.split(",").map((p) => p.trim()).filter(Boolean);
 
@@ -294,6 +296,8 @@ async function run(): Promise<void> {
       splitReview,
       splitThreshold,
       projectStructure,
+      reasoningEffort,
+      timeout: timeoutInput,
     });
 
     core.setOutput("review", result.body);
