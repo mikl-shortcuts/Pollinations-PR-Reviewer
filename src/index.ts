@@ -1,23 +1,10 @@
 import * as core from "@actions/core";
 import * as github from "@actions/github";
+import { minimatch } from "minimatch";
 import { reviewPR, FileInfo, ReviewResult, InlineComment } from "./reviewer";
 
 function shouldExclude(filename: string, patterns: string[]): boolean {
-  for (const pattern of patterns) {
-    if (pattern.startsWith("*.")) {
-      if (filename.endsWith(pattern.slice(1))) return true;
-    } else if (pattern.endsWith("/**")) {
-      const dir = pattern.slice(0, -3);
-      if (filename.startsWith(dir + "/") || filename === dir) return true;
-    } else if (pattern.endsWith("/*")) {
-      const dir = pattern.slice(0, -2);
-      const rest = filename.slice(dir.length + 1);
-      if (filename.startsWith(dir + "/") && !rest.includes("/")) return true;
-    } else {
-      if (filename === pattern || filename.endsWith("/" + pattern)) return true;
-    }
-  }
-  return false;
+  return patterns.some((pattern) => minimatch(filename, pattern, { dot: true, matchBase: true }));
 }
 
 async function resolvePRNumber(
@@ -154,7 +141,7 @@ async function postInlineComments(
     core.warning(`Batch comments failed: ${err}`);
 
     let posted = 0;
-    for (const c of formatted.slice(0, 5)) {
+    for (const c of formatted.slice(0, 15)) {
       try {
         await octokit.rest.pulls.createReviewComment({
           ...context.repo,

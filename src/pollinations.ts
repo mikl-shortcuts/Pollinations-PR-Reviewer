@@ -1,3 +1,5 @@
+import * as core from "@actions/core";
+
 export interface ChatMessage {
   role: "system" | "user" | "assistant";
   content: string;
@@ -83,16 +85,23 @@ export async function chatWithRetry(
 
   for (let attempt = 1; attempt <= maxRetries; attempt++) {
     try {
+      core.info(`Sending request to Pollinations API (Attempt ${attempt}/${maxRetries}) using model: ${options.model}`);
       const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), 120_000);
+      const timeout = setTimeout(() => {
+        core.warning(`Request timed out after 120 seconds on attempt ${attempt}`);
+        controller.abort();
+      }, 120_000);
 
       try {
-        return await chat(messages, options, controller.signal);
+        const result = await chat(messages, options, controller.signal);
+        core.info(`Successfully received response from Pollinations API on attempt ${attempt}`);
+        return result;
       } finally {
         clearTimeout(timeout);
       }
     } catch (error) {
       lastError = error instanceof Error ? error : new Error(String(error));
+      core.warning(`Attempt ${attempt} failed with error: ${lastError.message}`);
 
       if (error instanceof PermanentError) {
         throw error;
@@ -100,6 +109,7 @@ export async function chatWithRetry(
 
       if (attempt < maxRetries) {
         const delay = Math.min(attempt * 5000, 30_000);
+        core.info(`Waiting ${delay / 1000} seconds before next attempt...`);
         await new Promise((resolve) => setTimeout(resolve, delay));
       }
     }
