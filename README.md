@@ -238,7 +238,7 @@ jobs:
   with:
     pollinations-api-key: ${{ secrets.POLLINATIONS_API_KEY }}
     github-token: ${{ secrets.GITHUB_TOKEN }}
-    model: "deepseek-reasoner"
+    model: "deepseek-pro"
     reasoning-effort: "high"
     timeout: "180"
 ```
