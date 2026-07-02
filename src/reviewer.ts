@@ -237,11 +237,11 @@ export function extractInlineComments(review: string, files: FileInfo[], lineMap
   const comments: InlineComment[] = [];
   const validFiles = new Set(files.map((f) => f.filename));
 
-  const refRegex = />>>\s*([^:\s]+):(\d+)\s*\|\s*(.+)/g;
+  const refRegex = />>>\s*([^:\n]+?):L?(\d+)\s*\|\s*(.+)/g;
   let match;
 
   while ((match = refRegex.exec(review)) !== null) {
-    let filename = match[1].trim();
+    let filename = match[1].trim().replace(/^\.\//, "");
     const line = parseInt(match[2], 10);
     const message = match[3].trim();
 
@@ -376,10 +376,16 @@ async function reviewSplit(input: ReviewInput, modelDisplay: string): Promise<Re
     const chunk = chunks[i];
     core.info(`Chunk ${i + 1}/${chunks.length}`);
 
-    const { diff, lineMap } = buildNumberedDiff(chunk, perFileLimit);
+    const { diff, lineMap, truncated } = buildNumberedDiff(chunk, perFileLimit);
+    if (truncated) {
+      core.warning(`File changes in chunk ${i + 1} were truncated because they exceed the limits.`);
+    }
     for (const [k, v] of lineMap) allLineMaps.set(k, v);
 
     const msg = `Review files from PR "${input.title}":
+
+PR Description:
+${input.body || "_No description provided._"}
 
 ${structureBlock}${chunk.map((f) => `- \`${f.filename}\``).join("\n")}
 
